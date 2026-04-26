@@ -1,401 +1,669 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="UnifiedBill lets Omaha residents pay OPPD, MUD, and Cox from a single dashboard — one login, one payment, one confirmation." />
-    <title>UnifiedBill — Pay all your Omaha utility bills in one place</title>
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="UnifiedBill lets Omaha residents pay OPPD, MUD, and Cox from a single dashboard — one login, one payment, one confirmation." />
+  <title>UnifiedBill — Pay All Your Omaha Utility Bills in One Place</title>
 
-        :root {
-            --purple: #534AB7;
-            --purple-lt: #EEEDFE;
-            --teal: #0F6E56;
-            --teal-lt: #E1F5EE;
-            --gray-dark: #2C2C2A;
-            --gray-mid: #5F5E5A;
-            --gray-lt: #F1EFE8;
-            --gray-line: #D3D1C7;
-            --white: #FFFFFF;
-        }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet" />
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            color: var(--gray-dark);
-            background: var(--white);
-            line-height: 1.6;
-        }
+  <style>
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ── Nav ──────────────────────────────────────────────────────────── */
-        nav {
-            border-bottom: 1px solid var(--gray-line);
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+    /* ── Design tokens ─────────────────────────────────────────────────── */
+    :root {
+      --navy:       #1a2332;
+      --navy-mid:   #243044;
+      --teal:       oklch(50% 0.12 195);
+      --teal-light: oklch(94% 0.04 195);
+      --warm-white: #faf9f7;
+      --off-white:  #f3f1ee;
+      --text-body:  #3a4455;
+      --text-muted: #7a8598;
+      --border:     #e2ddd8;
+      --serif:      'Playfair Display', Georgia, serif;
+      --sans:       'DM Sans', system-ui, sans-serif;
+    }
 
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--purple);
-            letter-spacing: -0.5px;
-        }
+    html { scroll-behavior: smooth; }
 
-        @media (max-width: 380px) {
-            .status-badge {
-                display: none;
-                /* Hide on tiny screens */
-            }
-        }
+    body {
+      font-family: var(--sans);
+      background: var(--warm-white);
+      color: var(--text-body);
+      font-size: 17px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
 
-        .status-badge {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--teal);
-            background: var(--teal-lt);
-            border: 1px solid var(--teal);
-            border-radius: 20px;
-            padding: 4px 12px;
-            white-space: nowrap;
-            /* ADD THIS */
-        }
+    /* ── Wordmark ──────────────────────────────────────────────────────── */
+    .wordmark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .wordmark-icon {
+      width: 34px; height: 34px;
+      background: var(--teal);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wordmark-text {
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
 
-        /* ── Layout ───────────────────────────────────────────────────────── */
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
+    /* ── Top bar ───────────────────────────────────────────────────────── */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(250, 249, 247, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-contact { font-size: 14px; color: var(--text-muted); }
+    .topbar-contact a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .topbar-contact a:hover { text-decoration: underline; }
 
-        section {
-            padding: 64px 0;
-            border-bottom: 1px solid var(--gray-line);
-        }
+    /* ── Layout ────────────────────────────────────────────────────────── */
+    section { width: 100%; }
+    .container { max-width: 860px; margin: 0 auto; padding: 0 40px; }
 
-        section:last-of-type {
-            border-bottom: none;
-        }
+    /* ── Hero ──────────────────────────────────────────────────────────── */
+    .hero {
+      background: var(--navy);
+      padding: 140px 40px 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 110%, oklch(50% 0.10 195 / 0.18), transparent);
+      pointer-events: none;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: oklch(50% 0.12 195 / 0.15);
+      border: 1px solid oklch(50% 0.12 195 / 0.35);
+      color: oklch(75% 0.10 195);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 36px;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: oklch(65% 0.15 195);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 500;
+      color: #f0ede8;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+      max-width: 720px;
+      margin: 0 auto 28px;
+      text-wrap: pretty;
+    }
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      color: oklch(78% 0.03 220);
+      max-width: 560px;
+      margin: 0 auto;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+    .hero-billers {
+      margin-top: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .biller-chip {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      letter-spacing: 0.01em;
+    }
+    .biller-sep { color: rgba(255, 255, 255, 0.2); font-size: 18px; }
 
-        /* ── Hero ─────────────────────────────────────────────────────────── */
-        .hero {
-            padding: 80px 0 72px;
-            text-align: center;
-        }
+    /* ── How it works ──────────────────────────────────────────────────── */
+    .how-it-works { padding: 96px 0; background: var(--warm-white); }
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 500;
+      color: var(--navy);
+      line-height: 1.22;
+      letter-spacing: -0.02em;
+      margin-bottom: 56px;
+      text-wrap: pretty;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .step { padding: 36px 32px; }
+    .step:not(:last-child) { border-right: 1px solid var(--border); }
+    .step-num {
+      font-family: var(--serif);
+      font-size: 48px;
+      font-weight: 400;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .step h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+    }
+    .step p { font-size: 15px; color: var(--text-muted); line-height: 1.65; }
 
-        .hero h1 {
-            font-size: clamp(28px, 5vw, 44px);
-            font-weight: 700;
-            color: var(--gray-dark);
-            letter-spacing: -1px;
-            line-height: 1.15;
-            margin-bottom: 20px;
-        }
+    /* ── Payments ──────────────────────────────────────────────────────── */
+    .payments { padding: 80px 0; background: var(--navy); }
+    .payments .section-label { color: oklch(65% 0.10 195); }
+    .payments .section-title { color: #f0ede8; margin-bottom: 32px; }
+    .payments-body { color: oklch(72% 0.04 220); font-size: 17px; line-height: 1.75; max-width: 640px; }
+    .payments-body p + p { margin-top: 20px; }
+    .trust-row {
+      margin-top: 48px;
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      flex: 1;
+      min-width: 180px;
+      padding: 24px 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 10px;
+    }
+    .trust-item-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: oklch(65% 0.10 195);
+      margin-bottom: 8px;
+    }
+    .trust-item-value { font-size: 15px; color: rgba(255, 255, 255, 0.72); line-height: 1.5; }
 
-        .hero h1 span {
-            color: var(--purple);
-        }
+    /* ── About ─────────────────────────────────────────────────────────── */
+    .about { padding: 96px 0; background: var(--off-white); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .about-text .section-title { margin-bottom: 20px; }
+    .about-text p { color: var(--text-body); font-size: 16px; line-height: 1.75; }
+    .about-text p + p { margin-top: 16px; }
+    .about-aside {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+    }
+    .about-aside-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .timeline-list { list-style: none; display: flex; flex-direction: column; }
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-item:last-child  { border-bottom: none; padding-bottom: 0; }
+    .timeline-item:first-child { padding-top: 0; }
+    .timeline-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .timeline-dot.future { background: var(--border); }
+    .timeline-when {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .timeline-what { font-size: 14px; color: var(--navy); font-weight: 500; }
 
-        .hero p {
-            font-size: 18px;
-            color: var(--gray-mid);
-            max-width: 560px;
-            margin: 0 auto 32px;
-            line-height: 1.7;
-        }
+    /* ── Contact ───────────────────────────────────────────────────────── */
+    .contact-section { padding: 96px 0; background: var(--warm-white); }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: flex-start; }
+    .contact-intro p { color: var(--text-muted); font-size: 16px; line-height: 1.75; margin-top: 16px; }
+    .contact-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-row { display: flex; gap: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--navy); letter-spacing: 0.02em; }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--navy);
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px oklch(50% 0.12 195 / 0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8598' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .form-submit {
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 600;
+      color: white;
+      background: var(--teal);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      align-self: flex-start;
+    }
+    .form-submit:hover    { opacity: 0.88; }
+    .form-submit:active   { transform: scale(0.98); }
+    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-success {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--teal-light);
+      border: 1px solid oklch(50% 0.12 195 / 0.2);
+      color: var(--teal);
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .form-success.visible { display: flex; }
 
-        .billers {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+    /* ── Footer ────────────────────────────────────────────────────────── */
+    footer {
+      background: var(--navy);
+      padding: 52px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .footer-left { display: flex; flex-direction: column; gap: 8px; }
+    .footer-contact-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: oklch(60% 0.05 220);
+    }
+    .footer-contact-email {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-contact-email:hover { color: oklch(75% 0.10 195); }
+    .footer-copy     { font-size: 13px; color: oklch(50% 0.04 220); }
+    .footer-location { font-size: 13px; color: oklch(40% 0.04 220); margin-top: 4px; }
 
-        .biller-tag {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--gray-mid);
-            background: var(--gray-lt);
-            border: 1px solid var(--gray-line);
-            border-radius: 6px;
-            padding: 6px 14px;
-        }
-
-        /* ── How it works ─────────────────────────────────────────────────── */
-        .section-label {
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--purple);
-            margin-bottom: 12px;
-        }
-
-        .section-title {
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            margin-bottom: 48px;
-            color: var(--gray-dark);
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-        }
-
-        .step {
-            background: var(--gray-lt);
-            border: 1px solid var(--gray-line);
-            border-radius: 12px;
-            padding: 28px 24px;
-        }
-
-        .step-number {
-            width: 36px;
-            height: 36px;
-            background: var(--purple);
-            color: var(--white);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-
-        .step h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--gray-dark);
-        }
-
-        .step p {
-            font-size: 14px;
-            color: var(--gray-mid);
-            line-height: 1.6;
-        }
-
-        /* ── How payments work ────────────────────────────────────────────── */
-        .payment-box {
-            background: var(--purple-lt);
-            border: 1px solid var(--purple);
-            border-radius: 12px;
-            padding: 32px;
-            max-width: 680px;
-        }
-
-        .payment-box h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--purple);
-            margin-bottom: 12px;
-        }
-
-        .payment-box p {
-            font-size: 15px;
-            color: var(--gray-dark);
-            line-height: 1.7;
-            margin-bottom: 16px;
-        }
-
-        .payment-box p:last-child {
-            margin-bottom: 0;
-        }
-
-        .payment-box strong {
-            color: var(--gray-dark);
-        }
-
-        /* ── About ────────────────────────────────────────────────────────── */
-        .about-content {
-            max-width: 600px;
-        }
-
-        .about-content p {
-            font-size: 16px;
-            color: var(--gray-mid);
-            line-height: 1.75;
-            margin-bottom: 16px;
-        }
-
-        .about-content p:last-child {
-            margin-bottom: 0;
-        }
-
-        /* ── Contact / Footer ─────────────────────────────────────────────── */
-        footer {
-            padding: 48px 0;
-            text-align: center;
-        }
-
-        footer p {
-            font-size: 14px;
-            color: var(--gray-mid);
-            margin-bottom: 8px;
-        }
-
-        footer a {
-            color: var(--purple);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        .footer-meta {
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid var(--gray-line);
-            font-size: 13px;
-            color: var(--gray-line);
-        }
-    </style>
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 720px) {
+      .topbar         { padding: 0 20px; }
+      .topbar-contact { display: none; }
+      .hero           { padding: 110px 24px 80px; }
+      .container      { padding: 0 24px; }
+      .how-it-works,
+      .about,
+      .payments       { padding: 72px 0; }
+      .steps          { grid-template-columns: 1fr; }
+      .step:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+      .about-grid,
+      .contact-grid   { grid-template-columns: 1fr; gap: 40px; }
+      .form-row       { flex-direction: column; }
+      footer          { flex-direction: column; align-items: flex-start; }
+      .footer-right   { text-align: left; }
+    }
+  </style>
 </head>
-
 <body>
 
-    <!-- Nav -->
-    <nav>
-        <div class="logo">UnifiedBill</div>
-        <div class="status-badge">In Development &nbsp;·&nbsp; Omaha, NE &nbsp;·&nbsp; 2026</div>
-    </nav>
+  <!-- Top bar -->
+  <header class="topbar">
+    <a class="wordmark" href="#">
+      <div class="wordmark-icon">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <rect x="2" y="3"    width="14" height="3"   rx="1" fill="white" opacity="0.9"/>
+          <rect x="2" y="8"    width="10" height="2.5" rx="1" fill="white" opacity="0.6"/>
+          <rect x="2" y="12.5" width="7"  height="2.5" rx="1" fill="white" opacity="0.4"/>
+        </svg>
+      </div>
+      <span class="wordmark-text">UnifiedBill</span>
+    </a>
+    <div class="topbar-contact">
+      Questions? <a href="mailto:unifiedbillapp@gmail.com">unifiedbillapp@gmail.com</a>
+    </div>
+  </header>
 
-    <!-- Hero -->
-    <section class="hero">
-        <div class="container">
-            <h1>Pay all your Omaha utility bills<br /><span>in one place</span></h1>
-            <p>
-                One login. One dashboard. One payment.
-                Stop juggling three separate websites every month
-                for bills that all come due at the same time.
-            </p>
-            <div class="billers">
-                <span class="biller-tag">OPPD — Electricity</span>
-                <span class="biller-tag">MUD — Water &amp; Gas</span>
-                <span class="biller-tag">Cox — Internet</span>
-            </div>
-        </div>
-    </section>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      Currently in development &mdash; Omaha, NE &mdash; Launching 2026
+    </div>
+    <h1>Pay all your Omaha utility bills in one place</h1>
+    <p class="hero-sub">
+      UnifiedBill lets Omaha residents pay OPPD, MUD, and Cox from a single
+      dashboard &mdash; one login, one payment, one confirmation.
+    </p>
+    <div class="hero-billers">
+      <span class="biller-chip">OPPD</span>
+      <span class="biller-sep">+</span>
+      <span class="biller-chip">MUD</span>
+      <span class="biller-sep">+</span>
+      <span class="biller-chip">Cox</span>
+    </div>
+  </section>
 
-    <!-- How it works -->
-    <section>
-        <div class="container">
-            <div class="section-label">How it works</div>
-            <div class="section-title">Three steps. Then you are done.</div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>Add your billers</h3>
-                    <p>
-                        Enter your OPPD, MUD, and Cox account numbers once
-                        at signup. UnifiedBill remembers them for every
-                        payment after that.
-                    </p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Link your bank</h3>
-                    <p>
-                        Securely connect your bank account in seconds through
-                        our encrypted bank linking flow. Your credentials
-                        are never stored on our servers.
-                    </p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Pay your bills</h3>
-                    <p>
-                        One click pays any bill directly to the biller's
-                        bank account. You get an email confirmation
-                        the moment the payment is sent.
-                    </p>
-                </div>
-            </div>
+  <!-- How it works -->
+  <section class="how-it-works">
+    <div class="container">
+      <div class="section-label">How it works</div>
+      <h2 class="section-title">Three steps, once a month.</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">01</span>
+          <h3>Add your billers</h3>
+          <p>Enter your OPPD, MUD, and Cox account numbers once at signup. UnifiedBill remembers them for every payment after that.</p>
         </div>
-    </section>
+        <div class="step">
+          <span class="step-num">02</span>
+          <h3>Link your bank</h3>
+          <p>Securely connect your bank account in seconds through our encrypted bank linking flow. Your credentials are never stored.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <h3>Pay your bills</h3>
+          <p>One click pays any bill directly to the biller's bank account via ACH transfer. You get an email confirmation instantly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- How payments work -->
-    <section>
-        <div class="container">
-            <div class="section-label">Payment infrastructure</div>
-            <div class="section-title">Money goes directly to billers</div>
-            <div class="payment-box">
-                <h3>No middleman. No holding your money.</h3>
-                <p>
-                    When you pay through UnifiedBill, the money transfers directly
-                    from your bank account to OPPD, MUD, or Cox via ACH bank
-                    transfer — the same method used by Wells Fargo bill pay and
-                    other bank bill pay services.
-                </p>
-                <p>
-                    Each payment includes your biller account number in the payment
-                    reference field, so billers automatically match the payment to
-                    the correct customer account. The money is in the biller's bank
-                    account within 1–2 business days.
-                </p>
-                <p>
-                    Payments are processed through <strong>Stripe</strong>, a
-                    licensed payment processor used by Uber, Amazon, and Shopify —
-                    holding Money Transmitter Licenses across all US states.
-                </p>
-            </div>
+  <!-- Payments -->
+  <section class="payments">
+    <div class="container">
+      <div class="section-label">Payment processing</div>
+      <h2 class="section-title">Payments go directly to billers &mdash; no middleman</h2>
+      <div class="payments-body">
+        <p>
+          When you pay through UnifiedBill, the money transfers directly from your bank
+          account to OPPD, MUD, or Cox via ACH bank transfer &mdash; the same method used
+          by Wells Fargo bill pay and other bank bill pay services.
+        </p>
+        <p>
+          Each payment includes your biller account number in the payment reference field,
+          so billers can automatically match the payment to the correct customer account.
+        </p>
+        <p>
+          Payments are processed through Stripe, a licensed payment processor used by
+          companies like Uber, Amazon, and Shopify.
+        </p>
+      </div>
+      <div class="trust-row">
+        <div class="trust-item">
+          <div class="trust-item-label">Transfer method</div>
+          <div class="trust-item-value">ACH bank transfer &mdash; same as your bank's bill pay</div>
         </div>
-    </section>
+        <div class="trust-item">
+          <div class="trust-item-label">Payment processor</div>
+          <div class="trust-item-value">Stripe &mdash; used by Uber, Amazon, Shopify</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item-label">Account matching</div>
+          <div class="trust-item-value">Your account number included in every payment reference</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- About -->
-    <section>
-        <div class="container">
-            <div class="section-label">About</div>
-            <div class="section-title">Built in Omaha, for Omaha</div>
-            <div class="about-content">
-                <p>
-                    UnifiedBill is being built by an independent developer and founder based in Omaha, Nebraska
-                </p>
-                <p>
-                    The goal is simple — one place, one login, all your Omaha
-                    utility bills paid in under a minute. No surprises, no hidden
-                    fees, transparent 1.5% convenience fee per payment.
-                </p>
-                <p>
-                    Currently in development. Launching in Omaha in 2026.
-                </p>
-            </div>
+  <!-- About -->
+  <section class="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <div class="section-label">About</div>
+          <h2 class="section-title">Built in Omaha,<br />for Omaha</h2>
+          <p>UnifiedBill is being built by an independent developer and founder based in Omaha, Nebraska.</p>
+          <p>The goal is simple: one place, one login, all your Omaha utility bills paid in under a minute.</p>
         </div>
-    </section>
+        <div class="about-aside">
+          <div class="about-aside-title">Development timeline</div>
+          <ul class="timeline-list">
+            <li class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-when">Now</div>
+                <div class="timeline-what">Building core payment infrastructure</div>
+              </div>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot future"></div>
+              <div class="timeline-content">
+                <div class="timeline-when">Mid 2026</div>
+                <div class="timeline-what">Beta launch with early Omaha users</div>
+              </div>
+            </li>
+            <li class="timeline-item">
+              <div class="timeline-dot future"></div>
+              <div class="timeline-content">
+                <div class="timeline-when">Late 2026</div>
+                <div class="timeline-what">Full public launch</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p>Questions or partnership inquiries</p>
-            <p><a href="mailto:unifiedbillapp@gmail.com">unifiedbillapp@gmail.com</a></p>
-            <div class="footer-meta">
-                &copy; 2026 UnifiedBill &nbsp;&middot;&nbsp; Omaha, Nebraska
-            </div>
+  <!-- Contact -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-intro">
+          <div class="section-label">Contact</div>
+          <h2 class="section-title">Get in touch</h2>
+          <p>
+            Questions about how UnifiedBill works, partnership inquiries, or want to be
+            notified when we launch? Send us a message and we'll get back to you.
+          </p>
         </div>
-    </footer>
+        <div>
+          <!--
+            FORMSPREE SETUP:
+            1. Go to formspree.io and sign up with unifiedbillapp@gmail.com
+            2. Create a new form and copy your form ID (e.g. xpzgkrqw)
+            3. Replace YOUR_FORM_ID below with your actual form ID
+          -->
+          <form
+            class="contact-form"
+            id="contactForm"
+            action="https://formspree.io/f/mlgakgob"
+            method="POST"
+          >
+            <div class="form-row">
+              <div class="form-group">
+                <label for="cf-name">Name</label>
+                <input type="text" id="cf-name" name="name" placeholder="Your name" required />
+              </div>
+              <div class="form-group">
+                <label for="cf-email">Email</label>
+                <input type="email" id="cf-email" name="email" placeholder="you@example.com" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cf-subject">Subject</label>
+              <select id="cf-subject" name="subject">
+                <option value="">Select a topic&hellip;</option>
+                <option value="partnership">Partnership inquiry</option>
+                <option value="question">General question</option>
+                <option value="launch">Notify me at launch</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="cf-message">Message</label>
+              <textarea id="cf-message" name="message" placeholder="What's on your mind?" required></textarea>
+            </div>
+            <button type="submit" class="form-submit" id="submitBtn">Send message</button>
+          </form>
+
+          <div class="form-success" id="formSuccess">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5.5 9l2.5 2.5 4.5-4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Message sent &mdash; we'll be in touch soon.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-left">
+      <span class="footer-contact-label">Questions or partnership inquiries</span>
+      <a class="footer-contact-email" href="mailto:unifiedbillapp@gmail.com">
+        unifiedbillapp@gmail.com
+      </a>
+    </div>
+    <div class="footer-right">
+      <div class="footer-copy">&copy; 2026 UnifiedBill</div>
+      <div class="footer-location">Omaha, Nebraska</div>
+    </div>
+  </footer>
+
+  <!-- Form submission -->
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const form    = e.target;
+      const btn     = document.getElementById('submitBtn');
+      const success = document.getElementById('formSuccess');
+
+      btn.textContent = 'Sending\u2026';
+      btn.disabled    = true;
+
+      try {
+        const res = await fetch(form.action, {
+          method:  'POST',
+          body:    new FormData(form),
+          headers: { 'Accept': 'application/json' },
+        });
+        if (res.ok) {
+          form.style.display = 'none';
+          success.classList.add('visible');
+        } else {
+          throw new Error('Server error');
+        }
+      } catch {
+        alert('Something went wrong. Please email us directly at unifiedbillapp@gmail.com');
+        btn.textContent = 'Send message';
+        btn.disabled    = false;
+      }
+    });
+  </script>
+
+  <!-- Vercel Web Analytics -->
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
 
 </body>
-<!-- Analytics -->
-<script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-
 </html>
